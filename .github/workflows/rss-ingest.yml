@@ -1,4 +1,4 @@
-name: RSS Feed Ingestion
+name: RSS Feed Ingestion (R2 Hybrid)
 
 on:
   schedule:
@@ -15,6 +15,10 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -30,14 +34,15 @@ jobs:
       - name: Run Ingestor
         run: npm run ingest
 
-      - name: Commit and Push Changes
+      - name: Commit and Push Metadata Changes
         run: |
           git config --global user.name "Tim Jefferies"
           git config --global user.email "tim.jefferies@gmail.com"
-          git add feeds/ items/ data/sources/
+          # We only commit data/sources/ now. Feeds/Items go to R2.
+          git add data/sources/
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "No metadata changes to commit"
           else
-            git commit -m "chore: automated rss ingestion [skip ci]"
+            git commit -m "chore: update source etags [skip ci]"
             git push -f origin main
           fi

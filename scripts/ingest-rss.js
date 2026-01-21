@@ -3,6 +3,27 @@ const path = require('path');
 const crypto = require('crypto');
 const Parser = require('rss-parser');
 const sanitizeHtml = require('sanitize-html');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+// --- R2 Configuration ---
+const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
+const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
+const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
+const BUCKET_NAME = 'deckkit-feeds';
+
+if (!ACCOUNT_ID || !ACCESS_KEY_ID || !SECRET_ACCESS_KEY) {
+    console.error("Missing R2 credentials. Exiting.");
+    process.exit(1);
+}
+
+const s3 = new S3Client({
+    region: 'auto',
+    endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+        accessKeyId: ACCESS_KEY_ID,
+        secretAccessKey: SECRET_ACCESS_KEY,
+    },
+});
 
 const parser = new Parser({
   customFields: {
@@ -11,8 +32,7 @@ const parser = new Parser({
 });
 
 const SOURCES_DIR = path.join(__dirname, '../data/sources');
-const FEEDS_DIR = path.join(__dirname, '../feeds');
-const ITEMS_ROOT = path.join(__dirname, '../items');
+// We don't need local FEEDS/ITEMS dirs anymore, but we read SOURCES locally.
 
 const ALLOWED_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "li", "strong", "em", "a", "br", "div", "img", "span"];
 const ALLOWED_ATTRIBUTES = { "a": ["href", "rel", "target"], "img": ["loading", "src", "alt", "title"], "span": ["class", "style"] };
@@ -34,21 +54,26 @@ function wrapTitle(title, link) {
 }
 
 function prettifyItem(item, sourceHash) {
-    // We strip all branding metadata to maintain feed anonymity in the public repo
-    const domain = new URL(item.link || 'https://localhost').hostname.replace(/^www\./, '');
-    
-    // Minimal processing to avoid identifiable strings
-    if (domain.includes('news.ycombinator.com') || domain.includes('hnrss.org')) {
-        item.title = (item.title || '').replace(' | Hacker News', '');
-    }
-
     item.description = cleanHtml(item.description || '');
     item.title = wrapTitle(item.title || 'No Title', item.link || '#');
-    
-    // Force source to be the hash, not a name
     item.source = sourceHash; 
     item.category = '';
     return item;
+}
+
+async function uploadToR2(key, data, contentType = 'application/json') {
+    try {
+        await s3.send(new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: key,
+            Body: JSON.stringify(data, null, 2),
+            ContentType: contentType,
+            CacheControl: 'public, max-age=3600' // cache for 1 hour
+        }));
+        // console.log(`  ^ Uploaded ${key}`);
+    } catch (e) {
+        console.error(`  !! Upload Failed ${key}: ${e.message}`);
+    }
 }
 
 async function fetchFeed(url, etag, lastModified) {
@@ -67,52 +92,54 @@ async function fetchFeed(url, etag, lastModified) {
 }
 
 async function main() {
-    [FEEDS_DIR, ITEMS_ROOT, SOURCES_DIR].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
+    if (!fs.existsSync(SOURCES_DIR)) {
+        console.error("No sources directory found.");
+        process.exit(0);
+    }
 
     const sourceFiles = fs.readdirSync(SOURCES_DIR).filter(f => f.endsWith('.json'));
-    console.log(`Ingesting ${sourceFiles.length} sources...`);
+    console.log(`Ingesting ${sourceFiles.length} sources to R2...`);
 
     for (const file of sourceFiles) {
         const sourcePath = path.join(SOURCES_DIR, file);
         const source = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
         const sourceHash = file.replace('.json', '');
         
-        // Decode the obfuscated URL
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
-
-        const itemDir = path.join(ITEMS_ROOT, sourceHash);
-        if (!fs.existsSync(itemDir)) fs.mkdirSync(itemDir, { recursive: true });
 
         try {
             const result = await fetchFeed(feedUrl, source.etag, source.lastModified);
             if (result.modified) {
-                console.log(`  -> Syncing ${sourceHash}...`);
+                console.log(`  -> Processing ${sourceHash}...`);
                 const feed = await parser.parseString(result.xml);
                 const manifest = [];
+
+                const uploadPromises = [];
 
                 for (const item of feed.items) {
                     const guid = item.guid || item.link;
                     const itemHash = getHash(guid);
                     manifest.push({ g: guid, h: itemHash });
 
-                    const itemPath = path.join(itemDir, `${itemHash}.json`);
-                    if (!fs.existsSync(itemPath)) {
-                        const processed = prettifyItem({
-                            guid,
-                            title: item.title,
-                            link: item.link,
-                            pubDate: item.pubDate,
-                            description: item.contentEncoded || item.content || item.summary || item.description,
-                            timestamp: Date.parse(item.pubDate) || Date.now(),
-                        }, sourceHash);
-                        fs.writeFileSync(itemPath, JSON.stringify(processed, null, 2));
-                    }
+                    const processed = prettifyItem({
+                        guid,
+                        title: item.title,
+                        link: item.link,
+                        pubDate: item.pubDate,
+                        description: item.contentEncoded || item.content || item.summary || item.description,
+                        timestamp: Date.parse(item.pubDate) || Date.now(),
+                    }, sourceHash);
+                    
+                    // Upload item to R2
+                    uploadPromises.push(uploadToR2(`items/${sourceHash}/${itemHash}.json`, processed));
                 }
+                
+                // Upload manifest to R2
+                uploadPromises.push(uploadToR2(`feeds/${sourceHash}.json`, manifest));
 
-                // Write Feed Manifest
-                fs.writeFileSync(path.join(FEEDS_DIR, `${sourceHash}.json`), JSON.stringify(manifest, null, 2));
+                await Promise.all(uploadPromises);
 
-                // Update metadata
+                // Update local metadata (committed to git)
                 source.etag = result.etag || "";
                 source.lastModified = result.lastModified || "";
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
@@ -121,10 +148,6 @@ async function main() {
             console.error(`  !! Error ${sourceHash}: ${err.message}`);
         }
     }
-    
-    // NOTE: index.json is removed for privacy. 
-    // The client generates the sourceHash from the URL.
-    fs.writeFileSync(path.join(ITEMS_ROOT, '.nojekyll'), ''); 
     console.log('Ingestion complete.');
 }
 
