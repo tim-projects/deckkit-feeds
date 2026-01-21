@@ -39,5 +39,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: automated rss ingestion [skip ci]"
-            git push origin main
+            git push -f origin main
           fi

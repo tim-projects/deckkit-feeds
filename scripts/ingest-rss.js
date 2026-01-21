@@ -33,21 +33,19 @@ function wrapTitle(title, link) {
     return html;
 }
 
-function normalizeUrl(url) {
-    try {
-        const u = new URL(url);
-        let host = u.hostname.toLowerCase();
-        if (host.startsWith('www.')) host = host.substring(4);
-        if (host === 'old.reddit.com') host = 'reddit.com';
-        let path = u.pathname;
-        if (path.endsWith('/')) path = path.slice(0, -1);
-        return `${host}${path}${u.search}`;
-    } catch { return url.toLowerCase().trim(); }
-}
-
 function prettifyItem(item, sourceHash) {
+    // We strip all branding metadata to maintain feed anonymity in the public repo
+    const domain = new URL(item.link || 'https://localhost').hostname.replace(/^www\./, '');
+    
+    // Minimal processing to avoid identifiable strings
+    if (domain.includes('news.ycombinator.com') || domain.includes('hnrss.org')) {
+        item.title = (item.title || '').replace(' | Hacker News', '');
+    }
+
     item.description = cleanHtml(item.description || '');
     item.title = wrapTitle(item.title || 'No Title', item.link || '#');
+    
+    // Force source to be the hash, not a name
     item.source = sourceHash; 
     item.category = '';
     return item;
@@ -79,7 +77,9 @@ async function main() {
         const source = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
         const sourceHash = file.replace('.json', '');
         
+        // Decode the obfuscated URL
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
+
         const itemDir = path.join(ITEMS_ROOT, sourceHash);
         if (!fs.existsSync(itemDir)) fs.mkdirSync(itemDir, { recursive: true });
 
@@ -108,7 +108,11 @@ async function main() {
                         fs.writeFileSync(itemPath, JSON.stringify(processed, null, 2));
                     }
                 }
+
+                // Write Feed Manifest
                 fs.writeFileSync(path.join(FEEDS_DIR, `${sourceHash}.json`), JSON.stringify(manifest, null, 2));
+
+                // Update metadata
                 source.etag = result.etag || "";
                 source.lastModified = result.lastModified || "";
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
@@ -117,6 +121,9 @@ async function main() {
             console.error(`  !! Error ${sourceHash}: ${err.message}`);
         }
     }
+    
+    // NOTE: index.json is removed for privacy. 
+    // The client generates the sourceHash from the URL.
     fs.writeFileSync(path.join(ITEMS_ROOT, '.nojekyll'), ''); 
     console.log('Ingestion complete.');
 }
