@@ -1,0 +1,10 @@
+{
+  "guid": "https://old.reddit.com/r/Fuchsia/comments/1m23gub/release_f27_is_going_in_with_long_in_the_making/",
+  "title": "<h1><a href=\"https://old.reddit.com/r/Fuchsia/comments/1m23gub/release_f27_is_going_in_with_long_in_the_making/\" target=\"_blank\">Release F27 is going in with long in the making switch to netstack3 right after it</a></h1>",
+  "link": "https://old.reddit.com/r/Fuchsia/comments/1m23gub/release_f27_is_going_in_with_long_in_the_making/",
+  "pubDate": "2025-07-17T09:57:01.000Z",
+  "description": "<div><p>\"Netstack3 is planned to be enabled (via a feature flag) right after F27 rolls out to 100% and before F28 starts rolling out.\"</p> <p><a href=\"https://fuchsia.googlesource.com/fuchsia/+/refs/changes/59/1323559/3/docs/whats-new/release-notes/_f27.md\">https://fuchsia.googlesource.com/fuchsia/+/refs/changes/59/1323559/3/docs/whats-new/release-notes/_f27.md</a></p> <p>roadmap:</p> <p><a href=\"https://fuchsia.dev/fuchsia-src/contribute/roadmap/2021/netstack3\">https://fuchsia.dev/fuchsia-src/contribute/roadmap/2021/netstack3</a></p> </div>   submitted by   <a href=\"https://old.reddit.com/user/pedromeee\"> /u/pedromeee </a> <br /> <span><a href=\"https://old.reddit.com/r/Fuchsia/comments/1m23gub/release_f27_is_going_in_with_long_in_the_making/\">[link]</a></span>   <span><a href=\"https://old.reddit.com/r/Fuchsia/comments/1m23gub/release_f27_is_going_in_with_long_in_the_making/\">[comments]</a></span>",
+  "timestamp": 1752746221000,
+  "source": "1d9bdab6b86a",
+  "category": ""
+}
