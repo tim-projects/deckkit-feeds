@@ -5,7 +5,6 @@ const Parser = require('rss-parser');
 const sanitizeHtml = require('sanitize-html');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
-// --- R2 Configuration ---
 const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
@@ -32,7 +31,6 @@ const parser = new Parser({
 });
 
 const SOURCES_DIR = path.join(__dirname, '../data/sources');
-// We don't need local FEEDS/ITEMS dirs anymore, but we read SOURCES locally.
 
 const ALLOWED_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "li", "strong", "em", "a", "br", "div", "img", "span"];
 const ALLOWED_ATTRIBUTES = { "a": ["href", "rel", "target"], "img": ["loading", "src", "alt", "title"], "span": ["class", "style"] };
@@ -68,9 +66,8 @@ async function uploadToR2(key, data, contentType = 'application/json') {
             Key: key,
             Body: JSON.stringify(data, null, 2),
             ContentType: contentType,
-            CacheControl: 'public, max-age=3600' // cache for 1 hour
+            CacheControl: 'public, max-age=3600'
         }));
-        // console.log(`  ^ Uploaded ${key}`);
     } catch (e) {
         console.error(`  !! Upload Failed ${key}: ${e.message}`);
     }
@@ -92,11 +89,7 @@ async function fetchFeed(url, etag, lastModified) {
 }
 
 async function main() {
-    if (!fs.existsSync(SOURCES_DIR)) {
-        console.error("No sources directory found.");
-        process.exit(0);
-    }
-
+    if (!fs.existsSync(SOURCES_DIR)) process.exit(0);
     const sourceFiles = fs.readdirSync(SOURCES_DIR).filter(f => f.endsWith('.json'));
     console.log(`Ingesting ${sourceFiles.length} sources to R2...`);
 
@@ -104,7 +97,6 @@ async function main() {
         const sourcePath = path.join(SOURCES_DIR, file);
         const source = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
         const sourceHash = file.replace('.json', '');
-        
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
 
         try {
@@ -113,14 +105,12 @@ async function main() {
                 console.log(`  -> Processing ${sourceHash}...`);
                 const feed = await parser.parseString(result.xml);
                 const manifest = [];
-
                 const uploadPromises = [];
 
                 for (const item of feed.items) {
                     const guid = item.guid || item.link;
                     const itemHash = getHash(guid);
                     manifest.push({ g: guid, h: itemHash });
-
                     const processed = prettifyItem({
                         guid,
                         title: item.title,
@@ -129,17 +119,10 @@ async function main() {
                         description: item.contentEncoded || item.content || item.summary || item.description,
                         timestamp: Date.parse(item.pubDate) || Date.now(),
                     }, sourceHash);
-                    
-                    // Upload item to R2
                     uploadPromises.push(uploadToR2(`items/${sourceHash}/${itemHash}.json`, processed));
                 }
-                
-                // Upload manifest to R2
                 uploadPromises.push(uploadToR2(`feeds/${sourceHash}.json`, manifest));
-
                 await Promise.all(uploadPromises);
-
-                // Update local metadata (committed to git)
                 source.etag = result.etag || "";
                 source.lastModified = result.lastModified || "";
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
@@ -148,7 +131,6 @@ async function main() {
             console.error(`  !! Error ${sourceHash}: ${err.message}`);
         }
     }
-    console.log('Ingestion complete.');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
