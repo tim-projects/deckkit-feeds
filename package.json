@@ -1,0 +1,12 @@
+{
+  "name": "deckkit-feeds",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "ingest": "node scripts/ingest-rss.js"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0",
+    "sanitize-html": "^2.17.0"
+  }
+}

@@ -1,0 +1,43 @@
+name: RSS Feed Ingestion
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'data/sources/**'
+      - 'scripts/ingest-rss.js'
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Ingestor
+        run: npm run ingest
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Tim Jefferies"
+          git config --global user.email "tim.jefferies@gmail.com"
+          git add feeds/ items/ data/sources/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: automated rss ingestion [skip ci]"
+            git push origin main
+          fi
