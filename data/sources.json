@@ -1,0 +1,20 @@
+{
+  "c4ca4238": {
+    "url": "https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en",
+    "id": "google-news",
+    "etag": "",
+    "lastModified": ""
+  },
+  "c81e728d": {
+    "url": "https://www.hotukdeals.com/rss/all",
+    "id": "hotukdeals",
+    "etag": "",
+    "lastModified": ""
+  },
+  "eccbc87e": {
+    "url": "https://hnrss.org/best",
+    "id": "hn-best",
+    "etag": "",
+    "lastModified": "Tue, 27 Jan 2026 21:54:29 GMT"
+  }
+}

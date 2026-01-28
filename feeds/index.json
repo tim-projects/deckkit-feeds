@@ -1,0 +1,5 @@
+{
+  "https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en": "google-news",
+  "https://www.hotukdeals.com/rss/all": "hotukdeals",
+  "https://hnrss.org/best": "hn-best"
+}
