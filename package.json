@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "generate-demo": "node scripts/generate-demo-deck.js",
+    "generate-demo": "node scripts/generate-demo-deck.js",
     "ingest": "node scripts/ingest-rss.js"
   },
   "dependencies": {
