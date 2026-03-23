@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 
 const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
@@ -24,10 +24,50 @@ const s3 = new S3Client({
 const POPULARITY_PATH = path.join(__dirname, '../data/popularity.json');
 const SOURCES_DIR = path.join(__dirname, '../data/sources');
 
-// --- Scoring Constants ---
 const HOUR_IN_MS = 1000 * 60 * 60;
 const IMAGE_BOOST = 6 * HOUR_IN_MS;
 const DIVERSITY_PENALTY = 4 * HOUR_IN_MS;
+
+async function fetchManifest(sourceHash) {
+    try {
+        const result = await s3.send(new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: `feeds/${sourceHash}.json`,
+        }));
+        const body = await result.Body.transformToString();
+        return JSON.parse(body);
+    } catch (e) {
+        if (e.name !== 'NoSuchKey') console.error(`Failed to fetch manifest ${sourceHash}: ${e.message}`);
+        return null;
+    }
+}
+
+async function fetchItem(sourceHash, itemHash) {
+    try {
+        const result = await s3.send(new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: `items/${sourceHash}/${itemHash}.json`,
+        }));
+        const body = await result.Body.transformToString();
+        return JSON.parse(body);
+    } catch (e) {
+        if (e.name !== 'NoSuchKey') console.error(`Failed to fetch item ${sourceHash}/${itemHash}: ${e.message}`);
+        return null;
+    }
+}
+
+async function fetchItemsInParallel(items, concurrency = 20) {
+    const results = [];
+    for (let i = 0; i < items.length; i += concurrency) {
+        const batch = items.slice(i, i + concurrency);
+        const batchResults = await Promise.all(batch.map(async ({ sourceHash, h }) => {
+            const item = await fetchItem(sourceHash, h);
+            return { item, sourceHash, itemHash: h };
+        }));
+        results.push(...batchResults);
+    }
+    return results;
+}
 
 async function generate() {
     console.log("Starting Demo Deck Generation...");
@@ -48,20 +88,22 @@ async function generate() {
 
     for (const file of sourceFiles) {
         const sourceHash = file.replace('.json', '');
-        const manifestPath = path.join(__dirname, `../data/manifests/${sourceHash}.json`);
+        const manifest = await fetchManifest(sourceHash);
         
-        if (!fs.existsSync(manifestPath)) continue;
+        if (!manifest) continue;
 
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
         const subCount = feedPopularity[sourceHash] || 0;
         const subBoost = Math.log10(subCount + 1) * 12 * HOUR_IN_MS;
 
-        for (const entry of manifest) {
-            const itemPath = path.join(__dirname, `../data/items/${sourceHash}/${entry.h}.json`);
-            if (!fs.existsSync(itemPath)) continue;
+        console.log(`  Fetching items from ${sourceHash} (${manifest.length} items)...`);
 
-            const item = JSON.parse(fs.readFileSync(itemPath, 'utf8'));
-            const starCount = itemPopularity[entry.h] || 0;
+        const itemsWithHashes = manifest.map(entry => ({ ...entry, sourceHash }));
+        const fetched = await fetchItemsInParallel(itemsWithHashes, 20);
+
+        for (const { item, sourceHash: sh, itemHash } of fetched) {
+            if (!item) continue;
+
+            const starCount = itemPopularity[itemHash] || 0;
             const starBoost = starCount * 6 * HOUR_IN_MS;
 
             let score = new Date(item.pubDate || item.published).getTime();
@@ -69,7 +111,7 @@ async function generate() {
             score += subBoost;
             score += starBoost;
 
-            allItems.push({ ...item, score, sourceHash });
+            allItems.push({ ...item, score, sourceHash: sh });
         }
     }
 
@@ -96,7 +138,7 @@ async function generate() {
 
     const payload = JSON.stringify({
         updatedAt: new Date().toISOString(),
-        items: finalItems.map(({ score, sourceHash, ...rest }) => rest), // Strip score and internal metadata
+        items: finalItems.map(({ score, sourceHash, ...rest }) => rest),
     }, null, 2);
 
     console.log(`Generated demo deck with ${finalItems.length} items.`);
