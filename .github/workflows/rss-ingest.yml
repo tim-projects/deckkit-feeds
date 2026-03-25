@@ -4,10 +4,6 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
-  push:
-    paths:
-      - 'data/sources/**'
-      - 'scripts/ingest-rss.js'
 
 permissions:
   contents: write
@@ -19,6 +15,9 @@ jobs:
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY_ID }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -31,8 +30,14 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Scan uncached feeds from Firestore
+        run: node scripts/scan-uncached-feeds.js
+
       - name: Run Ingestor
         run: npm run ingest
+
+      - name: Clear uncached feeds in Firestore
+        run: node scripts/clear-uncached-feeds.js
 
       - name: Commit and Push Metadata Changes
         run: |
@@ -42,6 +47,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No metadata changes to commit"
           else
-            git commit -m "chore: update source etags [skip ci]"
+            git commit -m "chore: update source etags and failure counts [skip ci]"
             git push -f origin main
           fi

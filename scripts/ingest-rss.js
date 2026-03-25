@@ -125,10 +125,17 @@ async function main() {
                 await Promise.all(uploadPromises);
                 source.etag = result.etag || "";
                 source.lastModified = result.lastModified || "";
+                source.failures = 0; // Reset failures on success
+                fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
+            } else if (result.error) {
+                console.error(`  !! Fetch Error ${sourceHash}: ${result.error}`);
+                source.failures = (source.failures || 0) + 1;
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
             }
         } catch (err) {
-            console.error(`  !! Error ${sourceHash}: ${err.message}`);
+            console.error(`  !! Processing Error ${sourceHash}: ${err.message}`);
+            source.failures = (source.failures || 0) + 1;
+            fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
         }
     }
 }
