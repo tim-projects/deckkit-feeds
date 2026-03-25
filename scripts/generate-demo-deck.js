@@ -70,6 +70,10 @@ async function fetchItemsInParallel(items, concurrency = 20) {
 }
 
 async function generate() {
+    const args = process.argv.slice(2);
+    const outputFileIndex = args.indexOf('--output-file');
+    const outputFile = outputFileIndex !== -1 && args[outputFileIndex + 1] ? args[outputFileIndex + 1] : null;
+
     console.log("Starting Demo Deck Generation...");
 
     if (!fs.existsSync(POPULARITY_PATH)) {
@@ -143,15 +147,19 @@ async function generate() {
 
     console.log(`Generated demo deck with ${finalItems.length} items.`);
 
-    await s3.send(new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: 'demo-deck.json',
-        Body: payload,
-        ContentType: 'application/json',
-        CacheControl: 'public, max-age=300',
-    }));
-
-    console.log("Uploaded demo-deck.json to R2.");
+    if (outputFile) {
+        fs.writeFileSync(outputFile, payload);
+        console.log(`Wrote demo deck to ${outputFile}`);
+    } else {
+        await s3.send(new PutObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: 'demo-deck.json',
+            Body: payload,
+            ContentType: 'application/json',
+            CacheControl: 'public, max-age=300',
+        }));
+        console.log("Uploaded demo-deck.json to R2.");
+    }
 }
 
 generate().catch(console.error);

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "generate-demo": "node scripts/generate-demo-deck.js",
-    "ingest": "node scripts/ingest-rss.js"
+    "ingest": "node scripts/ingest-rss.js",
+    "compare-decks": "node scripts/compare-decks.js"
   },
   "dependencies": {
     "rss-parser": "^3.13.0",

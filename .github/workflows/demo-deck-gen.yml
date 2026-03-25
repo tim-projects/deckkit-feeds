@@ -19,6 +19,8 @@ jobs:
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY_ID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -28,8 +30,29 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
+
       - name: Install Dependencies
         run: npm install
 
-      - name: Generate Demo Deck
-        run: npm run generate-demo
+      - name: Generate New Demo Deck
+        run: npm run generate-demo -- --output-file demo-deck.json.new
+
+      - name: Fetch Old Demo Deck
+        run: |
+          aws s3 cp s3://deckkit-feeds/demo-deck.json demo-deck.json.old --endpoint-url=https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com || true
+        continue-on-error: true
+
+      - name: Compare Decks
+        id: compare
+        run: npm run compare-decks -- demo-deck.json.new demo-deck.json.old
+        continue-on-error: true
+
+      - name: Upload to R2 if Changed
+        if: steps.compare.outcome == 'success'
+        run: |
+          aws s3 cp demo-deck.json.new s3://deckkit-feeds/demo-deck.json --endpoint-url=https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
