@@ -1,0 +1,31 @@
+name: Cleanup Unused Feeds
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"  # Weekly Sunday 3am
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Find stale feeds
+        run: node scripts/find-stale-feeds.js
+
+      - name: Delete from R2
+        run: node scripts/delete-from-r2.js
+
+      - name: Delete from GitHub
+        run: node scripts/delete-from-github.js
