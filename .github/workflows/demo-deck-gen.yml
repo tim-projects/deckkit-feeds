@@ -34,10 +34,15 @@ jobs:
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip -o awscliv2.zip
-          ./aws/install --update
+          ./aws/install -i /home/runner/aws-cli -b /home/runner/bin
+        env:
+          AWS_CLI_INSTALL_DIR: /home/runner/aws-cli
 
       - name: Install Dependencies
         run: npm install
+
+      - name: Add AWS CLI to PATH
+        run: echo "$HOME/bin" >> $GITHUB_PATH
 
       - name: Generate New Demo Deck
         run: npm run generate-demo -- --output-file demo-deck.json.new
