@@ -2,12 +2,12 @@ name: Demo Deck Generation
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     paths:
-      - 'data/popularity.json'
-      - 'scripts/generate-demo-deck.js'
+      - "data/popularity.json"
+      - "scripts/generate-demo-deck.js"
 
 permissions:
   contents: write
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Install AWS CLI
         run: |
@@ -46,6 +46,18 @@ jobs:
 
       - name: Generate New Demo Deck
         run: npm run generate-demo -- --output-file demo-deck.json.new
+
+      - name: Verify Unique Items
+        run: |
+          item_count=$(cat demo-deck.json.new | jq '.items | length')
+          unique_guids=$(cat demo-deck.json.new | jq '[.items[] | .guid] | unique | length')
+          echo "Total items: $item_count"
+          echo "Unique GUIDs: $unique_guids"
+          if [ "$unique_guids" -lt 10 ]; then
+            echo "ERROR: Only $unique_guids unique GUIDs, expected 10"
+            exit 1
+          fi
+          echo "✓ Demo deck has 10 unique items"
 
       - name: Fetch Old Demo Deck
         run: |
