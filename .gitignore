@@ -51,3 +51,5 @@ node-modules
 demo-deck-system.md
 rss-feed-uploader.md
 rss-to-json-infra.md
+
+.tasks/
