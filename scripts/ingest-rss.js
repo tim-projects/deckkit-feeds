@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
-const Parser = require('rss-parser');
-const sanitizeHtml = require('sanitize-html');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client } = require('@aws-sdk/client-s3');
+const IngestorFactory = require('../lib/IngestorFactory');
 
 const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
@@ -24,69 +22,7 @@ const s3 = new S3Client({
     },
 });
 
-const parser = new Parser({
-  customFields: {
-    item: [['content:encoded', 'contentEncoded']],
-  }
-});
-
 const SOURCES_DIR = path.join(__dirname, '../data/sources');
-
-const ALLOWED_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "li", "strong", "em", "a", "br", "div", "img", "span"];
-const ALLOWED_ATTRIBUTES = { "a": ["href", "rel", "target"], "img": ["loading", "src", "alt", "title"], "span": ["class", "style"] };
-
-function getHash(text) {
-    return crypto.createHash('sha256').update(text).digest('hex').substring(0, 12);
-}
-
-function cleanHtml(html) {
-    if (!html) return '';
-    return sanitizeHtml(html, { allowedTags: ALLOWED_TAGS, allowedAttributes: ALLOWED_ATTRIBUTES });
-}
-
-function wrapTitle(title, link) {
-    const parts = title.split(" — ");
-    let html = `<h1><a href="${link}" target="_blank">${parts[0]}</a></h1>`;
-    for (let i = 1; i < parts.length; i++) html += `<h2>${parts[i]}</h2>`;
-    return html;
-}
-
-function prettifyItem(item, sourceHash) {
-    item.description = cleanHtml(item.description || '');
-    item.title = wrapTitle(item.title || 'No Title', item.link || '#');
-    item.source = sourceHash; 
-    item.category = '';
-    return item;
-}
-
-async function uploadToR2(key, data, contentType = 'application/json') {
-    try {
-        await s3.send(new PutObjectCommand({
-            Bucket: BUCKET_NAME,
-            Key: key,
-            Body: JSON.stringify(data, null, 2),
-            ContentType: contentType,
-            CacheControl: 'public, max-age=3600'
-        }));
-    } catch (e) {
-        console.error(`  !! Upload Failed ${key}: ${e.message}`);
-    }
-}
-
-async function fetchFeed(url, etag, lastModified) {
-    const headers = {};
-    if (etag) headers['If-None-Match'] = etag;
-    if (lastModified) headers['If-Modified-Since'] = lastModified;
-    try {
-        const response = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
-        if (response.status === 304) return { modified: false };
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const xml = await response.text();
-        return { modified: true, xml, etag: response.headers.get('etag'), lastModified: response.headers.get('last-modified') };
-    } catch (e) {
-        return { modified: false, error: e.message };
-    }
-}
 
 async function main() {
     if (!fs.existsSync(SOURCES_DIR)) process.exit(0);
@@ -100,35 +36,18 @@ async function main() {
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
 
         try {
-            const result = await fetchFeed(feedUrl, source.etag, source.lastModified);
-            if (result.modified) {
-                console.log(`  -> Processing ${sourceHash}...`);
-                const feed = await parser.parseString(result.xml);
-                const manifest = [];
-                const uploadPromises = [];
+            const ingestor = IngestorFactory.getIngestor(feedUrl, s3, BUCKET_NAME);
+            const result = await ingestor.run(source, sourceHash, feedUrl);
 
-                for (const item of feed.items) {
-                    const guid = item.guid || item.link;
-                    const itemHash = getHash(guid);
-                    manifest.push({ g: guid, h: itemHash });
-                    const processed = prettifyItem({
-                        guid,
-                        title: item.title,
-                        link: item.link,
-                        pubDate: item.pubDate,
-                        description: item.contentEncoded || item.content || item.summary || item.description,
-                        timestamp: Date.parse(item.pubDate) || Date.now(),
-                    }, sourceHash);
-                    uploadPromises.push(uploadToR2(`items/${sourceHash}/${itemHash}.json`, processed));
+            if (result.success) {
+                if (!result.skip) {
+                    source.etag = result.etag || "";
+                    source.lastModified = result.lastModified || "";
+                    source.failures = 0; // Reset failures on success
+                    fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
                 }
-                uploadPromises.push(uploadToR2(`feeds/${sourceHash}.json`, manifest));
-                await Promise.all(uploadPromises);
-                source.etag = result.etag || "";
-                source.lastModified = result.lastModified || "";
-                source.failures = 0; // Reset failures on success
-                fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
-            } else if (result.error) {
-                console.error(`  !! Fetch Error ${sourceHash}: ${result.error}`);
+            } else {
+                console.error(`  !! Ingestion Error ${sourceHash}: ${result.error}`);
                 source.failures = (source.failures || 0) + 1;
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
             }
