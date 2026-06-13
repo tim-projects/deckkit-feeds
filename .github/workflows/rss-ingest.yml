@@ -18,6 +18,8 @@ jobs:
       FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
       FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
       FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+      REDDIT_USER: ${{ secrets.REDDIT_USER }}
+      REDDIT_FEED: ${{ secrets.REDDIT_FEED }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
