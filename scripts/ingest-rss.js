@@ -7,6 +7,7 @@ const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const BUCKET_NAME = 'deckkit-feeds';
+const CLIENT_BUCKET_NAME = 'feeds.deckk.it';
 
 if (!ACCOUNT_ID || !ACCESS_KEY_ID || !SECRET_ACCESS_KEY) {
     console.error("Missing R2 credentials. Exiting.");
@@ -36,27 +37,37 @@ async function main() {
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
 
         try {
-            const ingestor = IngestorFactory.getIngestor(feedUrl, s3, BUCKET_NAME);
+            const ingestor = IngestorFactory.getIngestor(feedUrl, s3, BUCKET_NAME, CLIENT_BUCKET_NAME);
             const result = await ingestor.run(source, sourceHash, feedUrl);
 
             if (result.success) {
                 if (!result.skip) {
                     source.etag = result.etag || "";
                     source.lastModified = result.lastModified || "";
-                    source.failures = 0; // Reset failures on success
+                    source.failures = 0;
+                    delete source.brokenSince;
+                    delete source.lastError;
                     fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
                 }
             } else {
                 console.error(`  !! Ingestion Error ${sourceHash}: ${result.error}`);
                 source.failures = (source.failures || 0) + 1;
+                source.lastError = result.error;
+                if (!source.brokenSince) {
+                    source.brokenSince = new Date().toISOString();
+                }
                 fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
             }
         } catch (err) {
             console.error(`  !! Processing Error ${sourceHash}: ${err.message}`);
             source.failures = (source.failures || 0) + 1;
+            source.lastError = err.message;
+            if (!source.brokenSince) {
+                source.brokenSince = new Date().toISOString();
+            }
             fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
         }
     }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch(e => { console.error(e); process.exit(1) });
