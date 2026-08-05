@@ -2,5 +2,7 @@
   "u": "IyBWaWV0bmFtIE5ld3MgKGNvbW1lbnRlZCk=",
   "h": "c8c744f85043",
   "registeredAt": "2026-03-25T13:18:54.152Z",
-  "failures": 1983
+  "failures": 1984,
+  "lastError": "Access Denied",
+  "brokenSince": "2026-08-05T13:19:58.093Z"
 }
