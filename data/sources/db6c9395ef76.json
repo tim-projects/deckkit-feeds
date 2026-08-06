@@ -2,9 +2,9 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL2Vjb25vbWljY29sbGFwc2UvdG9wLnJzcz90PW1vbnRoJmxpbWl0PTU=",
   "h": "db6c9395ef76",
   "registeredAt": "2026-03-25T13:18:54.149Z",
-  "failures": 158,
+  "failures": 159,
   "etag": "",
   "lastModified": "",
-  "lastError": "Invalid character in entity name\nLine: 19\nColumn: 196\nChar: =",
+  "lastError": "Access Denied",
   "brokenSince": "2026-08-05T13:20:00.904Z"
 }
