@@ -4,7 +4,7 @@
   "registeredAt": "2026-03-25T13:18:54.148Z",
   "etag": "",
   "lastModified": "",
-  "failures": 253,
-  "lastError": "Invalid character in entity name\nLine: 19\nColumn: 196\nChar: =",
+  "failures": 254,
+  "lastError": "Access Denied",
   "brokenSince": "2026-08-05T13:19:59.883Z"
 }
