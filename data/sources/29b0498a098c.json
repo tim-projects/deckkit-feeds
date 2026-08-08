@@ -4,7 +4,7 @@
   "registeredAt": "2026-03-25T13:18:54.143Z",
   "etag": "",
   "lastModified": "",
-  "failures": 534,
+  "failures": 535,
   "lastError": "Invalid character in entity name\nLine: 19\nColumn: 196\nChar: =",
   "brokenSince": "2026-08-05T13:19:39.307Z"
 }
