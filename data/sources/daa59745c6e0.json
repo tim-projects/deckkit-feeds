@@ -3,8 +3,6 @@
   "h": "daa59745c6e0",
   "registeredAt": "2026-03-25T13:18:54.142Z",
   "etag": "",
-  "lastModified": "Sun, 09 Aug 2026 19:16:49 GMT",
-  "failures": 1,
-  "lastError": "fetch failed",
-  "brokenSince": "2026-08-10T10:01:49.382Z"
+  "lastModified": "Mon, 10 Aug 2026 06:02:38 GMT",
+  "failures": 0
 }
