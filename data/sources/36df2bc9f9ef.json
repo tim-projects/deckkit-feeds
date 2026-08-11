@@ -2,7 +2,7 @@
   "u": "I2h0dHBzOi8vd3d3LnlvdXR1YmUuY29tL2ZlZWRzL3ZpZGVvcy54bWw/Y2hhbm5lbF9pZD1VQzJDX2pTaHRMNzI1aHZibTFhclNWOXc=",
   "h": "36df2bc9f9ef",
   "registeredAt": "2026-03-25T13:18:54.152Z",
-  "failures": 2116,
+  "failures": 2117,
   "lastError": "Failed to parse URL from #https://www.youtube.com/feeds/videos.xml?channel_id=UC2C_jShtL725hvbm1arSV9w",
   "brokenSince": "2026-08-05T13:19:40.492Z"
 }
