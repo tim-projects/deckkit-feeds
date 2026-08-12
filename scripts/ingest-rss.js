@@ -7,7 +7,6 @@ const ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const BUCKET_NAME = 'deckkit-feeds';
-const CLIENT_BUCKET_NAME = process.env.CLIENT_BUCKET_NAME;
 
 if (!ACCOUNT_ID || !ACCESS_KEY_ID || !SECRET_ACCESS_KEY) {
     console.error("Missing R2 credentials. Exiting.");
@@ -38,7 +37,7 @@ async function main() {
 
         try {
             const ingestor = IngestorFactory.getIngestor(feedUrl, s3, BUCKET_NAME);
-            const result = await ingestor.run(source, sourceHash, feedUrl, CLIENT_BUCKET_NAME);
+            const result = await ingestor.run(source, sourceHash, feedUrl);
 
             if (result.success) {
                 if (!result.skip) {
