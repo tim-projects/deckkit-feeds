@@ -2,7 +2,7 @@
   "u": "I2h0dHBzOi8vd3d3LmhvdHVrZGVhbHMuY29tL3Jzcy9hbGw=",
   "h": "d85a1c5b1ebb",
   "registeredAt": "2026-03-25T13:18:54.152Z",
-  "failures": 2169,
+  "failures": 2170,
   "lastError": "Failed to parse URL from #https://www.hotukdeals.com/rss/all",
   "brokenSince": "2026-08-05T13:20:00.036Z"
 }
