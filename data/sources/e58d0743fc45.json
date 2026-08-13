@@ -2,7 +2,7 @@
   "u": "aHR0cHM6Ly93d3cuaG90dWtkZWFscy5jb20vcnNzL2FsbA==",
   "h": "e58d0743fc45",
   "registeredAt": "2026-03-25T13:18:54.151Z",
-  "failures": 2165,
+  "failures": 2166,
   "lastError": "HTTP 404",
   "brokenSince": "2026-08-05T13:20:03.572Z"
 }
