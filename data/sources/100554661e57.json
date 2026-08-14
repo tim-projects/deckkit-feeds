@@ -4,7 +4,7 @@
   "registeredAt": "2026-03-25T13:18:54.142Z",
   "etag": "W/\"19ae80a9bcf163f9bca570633a0c3e40\"",
   "lastModified": "Thu, 13 Aug 2026 00:50:53 GMT",
-  "failures": 12,
+  "failures": 13,
   "lastError": "The operation was aborted due to timeout",
   "brokenSince": "2026-08-13T13:13:27.789Z"
 }
