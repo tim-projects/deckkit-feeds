@@ -2,7 +2,7 @@
   "u": "I2h0dHBzOi8vbmV3cy5nb29nbGUuY29tL3Jzcz9obD1lbi1HQiZnbD1HQiZjZWlkPUdCOmVu",
   "h": "531eb1f32545",
   "registeredAt": "2026-03-25T13:18:54.151Z",
-  "failures": 2190,
+  "failures": 2191,
   "lastError": "Failed to parse URL from #https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en",
   "brokenSince": "2026-08-05T13:19:43.970Z"
 }
