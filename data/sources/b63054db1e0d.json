@@ -2,7 +2,7 @@
   "u": "IyBodHRwczovL3Jzcy5hcHAvcnNzLWZlZWQvY3JlYXRlLWZhY2Vib29rLXJzcy1mZWVk",
   "h": "b63054db1e0d",
   "registeredAt": "2026-03-25T13:18:54.152Z",
-  "failures": 2214,
+  "failures": 2215,
   "lastError": "Failed to parse URL from # https://rss.app/rss-feed/create-facebook-rss-feed",
   "brokenSince": "2026-08-05T13:19:55.535Z"
 }
