@@ -2,9 +2,9 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL0hpZ2hTdHJhbmdlbmVzcy90b3AucnNzP3Q9d2VlayZsaW1pdD01",
   "h": "f5fb6f0ae4e7",
   "registeredAt": "2026-03-25T13:18:54.146Z",
-  "failures": 616,
+  "failures": 617,
   "etag": "",
   "lastModified": "",
-  "lastError": "HTTP 429",
+  "lastError": "Invalid character in tag name\nLine: 65\nColumn: 3680\nChar: ;",
   "brokenSince": "2026-08-05T13:20:06.352Z"
 }
