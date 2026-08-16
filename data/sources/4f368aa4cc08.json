@@ -2,7 +2,7 @@
   "u": "I2h0dHBzOi8vcnNzLmFwcC9mZWVkcy82Y2FGemI3cm00eThZQUlaLnhtbA==",
   "h": "4f368aa4cc08",
   "registeredAt": "2026-03-25T13:18:54.152Z",
-  "failures": 2275,
+  "failures": 2276,
   "lastError": "Failed to parse URL from #https://rss.app/feeds/6caFzb7rm4y8YAIZ.xml",
   "brokenSince": "2026-08-05T13:19:43.462Z"
 }
