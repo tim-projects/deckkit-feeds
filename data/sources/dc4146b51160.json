@@ -2,9 +2,9 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL2JvdHdhdGNoL3RvcC5yc3M/dD15ZWFyJmxpbWl0PTU=",
   "h": "dc4146b51160",
   "registeredAt": "2026-03-25T13:18:54.149Z",
-  "failures": 905,
+  "failures": 906,
   "etag": "",
   "lastModified": "",
-  "lastError": "Invalid character in tag name\nLine: 65\nColumn: 3680\nChar: ;",
+  "lastError": "HTTP 429",
   "brokenSince": "2026-08-05T13:20:01.308Z"
 }
