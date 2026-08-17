@@ -35,6 +35,17 @@ async function main() {
         const sourceHash = file.replace('.json', '');
         const feedUrl = Buffer.from(source.u, 'base64').toString('utf8');
 
+        if (!feedUrl || feedUrl.startsWith('#') || !/^https?:\/\//i.test(feedUrl)) {
+            console.error(`  !! Skipping ${sourceHash}: Invalid URL "${feedUrl}"`);
+            source.failures = (source.failures || 0) + 1;
+            source.lastError = `Invalid URL: ${feedUrl}`;
+            if (!source.brokenSince) {
+                source.brokenSince = new Date().toISOString();
+            }
+            fs.writeFileSync(sourcePath, JSON.stringify(source, null, 2));
+            continue;
+        }
+
         try {
             const ingestor = IngestorFactory.getIngestor(feedUrl, s3, BUCKET_NAME);
             const result = await ingestor.run(source, sourceHash, feedUrl);
