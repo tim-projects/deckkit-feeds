@@ -4,7 +4,5 @@
   "registeredAt": "2026-03-25T13:18:54.142Z",
   "etag": "W/\"0674097ebb906fde28264d5e9e903007\"",
   "lastModified": "Fri, 21 Aug 2026 00:50:40 GMT",
-  "failures": 1,
-  "lastError": "Unexpected close tag\nLine: 92\nColumn: 7\nChar: >",
-  "brokenSince": "2026-08-21T14:55:52.050Z"
+  "failures": 0
 }
