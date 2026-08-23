@@ -2,10 +2,8 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL05ld3NPZlRoZVN0dXBpZC90b3AucnNzP3Q9d2VlayZsaW1pdD01",
   "h": "df94bedeb879",
   "registeredAt": "2026-03-25T13:18:54.142Z",
-  "failures": 2,
+  "failures": 0,
   "etag": "",
   "lastModified": "",
-  "lastFetchedAt": "2026-08-23T03:47:44.707Z",
-  "lastError": "Invalid character in tag name\nLine: 64\nColumn: 290\nChar: ;",
-  "brokenSince": "2026-08-23T01:23:16.219Z"
+  "lastFetchedAt": "2026-08-23T06:18:40.244Z"
 }
