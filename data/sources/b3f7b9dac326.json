@@ -4,8 +4,8 @@
   "registeredAt": "2026-03-25T13:18:54.146Z",
   "etag": "",
   "lastModified": "",
-  "failures": 9,
-  "lastFetchedAt": "2026-09-02T02:32:55.146Z",
+  "failures": 10,
+  "lastFetchedAt": "2026-09-02T07:12:39.268Z",
   "lastError": "Invalid character in tag name\nLine: 65\nColumn: 290\nChar: ;",
   "brokenSince": "2026-08-31T16:55:36.625Z"
 }
