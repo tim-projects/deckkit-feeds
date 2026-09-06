@@ -2,9 +2,7 @@
   "u": "aHR0cHM6Ly9pb3RhLW5ld3MuY29tL2ZlZWQv",
   "h": "100554661e57",
   "registeredAt": "2026-03-25T13:18:54.142Z",
-  "etag": "W/\"dfd11de52c2b15a516cdbc913243e609\"",
-  "lastModified": "Sat, 05 Sep 2026 00:51:01 GMT",
-  "failures": 1,
-  "lastError": "We encountered an internal error. Please try again.",
-  "brokenSince": "2026-09-06T01:02:44.239Z"
+  "etag": "W/\"8efc7654a64b456e9cb21e0969391457\"",
+  "lastModified": "Sun, 06 Sep 2026 00:50:18 GMT",
+  "failures": 0
 }
