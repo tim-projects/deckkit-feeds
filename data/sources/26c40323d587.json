@@ -4,8 +4,8 @@
   "registeredAt": "2026-03-25T13:18:54.147Z",
   "etag": "",
   "lastModified": "",
-  "failures": 68,
-  "lastFetchedAt": "2026-09-11T21:59:37.215Z",
-  "lastError": "Invalid character in tag name\nLine: 68\nColumn: 290\nChar: ;",
+  "failures": 69,
+  "lastFetchedAt": "2026-09-12T01:44:15.185Z",
+  "lastError": "The operation was aborted due to timeout",
   "brokenSince": "2026-08-31T15:42:10.625Z"
 }
