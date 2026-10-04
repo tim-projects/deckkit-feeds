@@ -2,10 +2,10 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL3BvcHVsYXIvdG9wLnJzcz90PWRheSZsaW1pdD01",
   "h": "e94378777b57",
   "registeredAt": "2026-03-25T13:18:54.142Z",
-  "failures": 195,
+  "failures": 196,
   "etag": "",
   "lastModified": "",
-  "lastFetchedAt": "2026-10-04T17:51:59.306Z",
+  "lastFetchedAt": "2026-10-04T20:51:58.151Z",
   "lastError": "Invalid character in tag name\nLine: 72\nColumn: 1192\nChar: ;",
   "brokenSince": "2026-08-31T17:29:35.710Z"
 }
