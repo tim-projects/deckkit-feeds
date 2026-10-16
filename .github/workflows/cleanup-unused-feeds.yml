@@ -5,9 +5,17 @@ on:
     - cron: "0 3 * * 0"  # Weekly Sunday 3am
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    env:
+      DRY_RUN: true
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
