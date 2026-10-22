@@ -1,0 +1,73 @@
+name: Reprocess Feed
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_hash:
+        description: 'Source hash (e.g. 1f80e858dc2f)'
+        required: false
+        default: ''
+      feed_url:
+        description: 'Feed URL (alternative to source_hash)'
+        required: false
+        default: ''
+      prune:
+        description: 'Delete stale items for this feed'
+        required: false
+        default: 'false'
+      dry_run:
+        description: 'Dry run (no R2 writes)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  reprocess:
+    runs-on: ubuntu-latest
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY_ID }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Reprocess Feed
+        run: |
+          CMD="node scripts/reprocess-feed.js"
+          if [ -n "${{ inputs.source_hash }}" ]; then
+            CMD="$CMD --source ${{ inputs.source_hash }}"
+          fi
+          if [ -n "${{ inputs.feed_url }}" ]; then
+            CMD="$CMD --url ${{ inputs.feed_url }}"
+          fi
+          if [ "${{ inputs.prune }}" = 'true' ]; then
+            CMD="$CMD --prune"
+          fi
+          if [ "${{ inputs.dry_run }}" = 'true' ]; then
+            CMD="$CMD --dry-run"
+          fi
+          eval "$CMD"
+
+      - name: Commit Source Metadata Changes
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          git config --global user.name "Tim Jefferies"
+          git config --global user.email "tim.jefferies@gmail.com"
+          git add data/sources/
+          if git diff --staged --quiet; then
+            echo "No metadata changes to commit"
+          else
+            git commit -m "chore: reprocess feed [skip ci]"
+            git push -f origin main
+          fi
