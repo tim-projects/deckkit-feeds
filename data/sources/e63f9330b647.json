@@ -2,7 +2,7 @@
   "u": "aHR0cHM6Ly93d3cueW91dHViZS5jb20vZmVlZHMvdmlkZW9zLnhtbD9jaGFubmVsX2lkPVVDbU5DZnVTMFVfQ0c5a1FIeEUyQXhpZw==",
   "h": "e63f9330b647",
   "registeredAt": "2026-10-22T06:45:00.000Z",
-  "failures": 31,
+  "failures": 32,
   "lastError": "HTTP 0",
   "brokenSince": "2026-10-22T07:08:36.350Z"
 }
