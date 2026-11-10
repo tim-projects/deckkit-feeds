@@ -4,8 +4,8 @@
   "registeredAt": "2026-03-25T13:18:54.145Z",
   "etag": "",
   "lastModified": "",
-  "failures": 370,
-  "lastFetchedAt": "2026-11-09T23:03:27.668Z",
+  "failures": 371,
+  "lastFetchedAt": "2026-11-10T05:19:19.282Z",
   "lastError": "HTTP 403",
   "brokenSince": "2026-08-31T17:02:11.149Z"
 }
