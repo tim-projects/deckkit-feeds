@@ -2,10 +2,10 @@
   "u": "aHR0cHM6Ly9vbGQucmVkZGl0LmNvbS9yL29wZW5iYXphYXIvdG9wLnJzcz90PXllYXImbGltaXQ9NQ==",
   "h": "dd2c1eebe59a",
   "registeredAt": "2026-03-25T13:18:54.148Z",
-  "failures": 413,
+  "failures": 414,
   "etag": "",
   "lastModified": "",
-  "lastFetchedAt": "2026-11-21T19:29:41.824Z",
+  "lastFetchedAt": "2026-11-22T00:13:48.696Z",
   "lastError": "HTTP 403",
   "brokenSince": "2026-08-31T17:20:49.654Z"
 }
