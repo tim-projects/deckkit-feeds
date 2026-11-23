@@ -4,5 +4,7 @@
   "registeredAt": "2026-03-25T13:18:54.147Z",
   "etag": "",
   "lastModified": "Sun, 22 Nov 2026 22:10:58 GMT",
-  "failures": 0
+  "failures": 1,
+  "lastError": "fetch failed",
+  "brokenSince": "2026-11-23T03:15:38.091Z"
 }
